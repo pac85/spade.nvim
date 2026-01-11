@@ -80,19 +80,25 @@ local function install_command()
 end
 
 local function setup_treesitter()
+	vim.filetype.add({
+		extension = {
+			spade = "spade",
+		},
+	})
 	-- see https://github.com/nvim-treesitter/nvim-treesitter
 	require("nvim-treesitter.install").prefer_git = true
-	require("nvim-treesitter.parsers").get_parser_configs()["spade"] = {
-		install_info = {
-			url = "https://gitlab.com/spade-lang/tree-sitter-spade/",
-			files = { "src/parser.c" },
-			branch = "main",
-			generate_requires_npm = false,
-			requires_generate_from_grammar = false,
-		},
-		filetype = "spade",
-	}
-
+	vim.api.nvim_create_autocmd('User', { pattern = 'TSUpdate',
+	callback = function()
+		require("nvim-treesitter.parsers").spade = {
+			install_info = {
+				url = "https://gitlab.com/spade-lang/tree-sitter-spade",
+				revision = "HEAD",
+			},
+			tier = 2,
+			filetype = "spade",
+		}
+	end})
+	--
 	-- update or install the grammar
 	if_online(function()
 		vim.cmd.TSUpdate("spade")
